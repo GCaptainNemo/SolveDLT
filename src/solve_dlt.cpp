@@ -75,9 +75,12 @@ void plu_factor(double Ab[8][9], double res[9])
 	{
 		int max_val = Ab[k][k];
 		int max_id = k;
+		// switch two row
+		
 		for (int row = k + 1; row < 8; ++row)
 		{
-			int val = Ab[row][k] > 0 ? Ab[row][k] : -Ab[row][k];
+			
+			double val = (Ab[row][k] > 0 ? Ab[row][k] : -Ab[row][k]);
 			if (val > max_val) {
 				max_val = val;
 				max_id = row;
@@ -92,7 +95,7 @@ void plu_factor(double Ab[8][9], double res[9])
 		}
 		if ((Ab[k][k] > 0 ? Ab[k][k] :-Ab[k][k]) < 1e-3)
 		{
-			printf("k = %d, singular = %f\n", k, Ab[k][k]);
+			printf("row = %d, singular = %f\n", k, Ab[k][k]);	
 		}
 		for (int row = k + 1; row < 8; ++row)
 		{
