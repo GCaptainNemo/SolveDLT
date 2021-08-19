@@ -4,5 +4,11 @@
 
 本仓库不借助线性代数库实现四点DLT求解过程，使用PLU矩阵分解进行线性方程组求解。可以扩展到使用CUDA进行大规模DLT问题的求解。
 
+## 算子扩展
+
+在DLT求解的基础上，可以将求解过程嵌入到深度学习计算图中，变成一个算子F，输出为H(单应性矩阵)，输入为源点(srcPts)和目标点(dstPts)。计算图反向传播过程，需要考虑H关于srcPts和dstPts的导数，需手动推算矩阵导数，推荐矩阵在线求导网站[www.matrixcalculus.org/](http://www.matrixcalculus.org/)
+
+
+
 
 
