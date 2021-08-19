@@ -1,10 +1,15 @@
 #include "../include/solve_dlt.h"
+#include "../include/math_operation.h"
 #include <iostream>
-void plu_factor(double Ab[8][9], double res[9]);
 
-void solve_dlt(double src_4pts[4][2], double dst_4pts[4][2]) 
+// two method:
+// 1. Gauss elimination method h = inv(A) @ b, 
+// 2. PLU factorization solve Ah = b
+
+
+void solve_dlt_plu(double src_4pts[4][2], double dst_4pts[4][2]) 
 {
-
+	// 1. plu factorization
 	double Ab[8][9];
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 9; ++j) {
@@ -66,63 +71,69 @@ void solve_dlt(double src_4pts[4][2], double dst_4pts[4][2])
 		std::cout << "\n";
 	};
 }
-
-void plu_factor(double Ab[8][9], double res[9])
+void solve_dlt_gaussian(double src_4pts[4][2], double dst_4pts[4][2]) 
 {
-	
-	// PLU factorization to solve DLT
-	for (int k = 0; k < 8; ++k)
-	{
-		int max_val = Ab[k][k];
-		int max_id = k;
-		// switch two row
-		
-		for (int row = k + 1; row < 8; ++row)
-		{
-			
-			double val = (Ab[row][k] > 0 ? Ab[row][k] : -Ab[row][k]);
-			if (val > max_val) {
-				max_val = val;
-				max_id = row;
+	// intialize A, b
+	double A[8][8];
+	double b[8];
+	for (int i = 0; i < 4; ++i) {
+		b[i] = dst_4pts[i][0];
+		for (int j = 0; j < 8; ++j) {
+			if (j < 2) {
+				A[i][j] = src_4pts[i][j];
 			}
-		}
-		if (max_id != k) {
-			for (int col = 0; col < 9; ++col) {
-				double linshi = Ab[max_id][col];
-				Ab[max_id][col] = Ab[k][col];
-				Ab[k][col] = linshi;
+			else if (j == 2) {
+				A[i][j] = 1;
 			}
-		}
-		if ((Ab[k][k] > 0 ? Ab[k][k] :-Ab[k][k]) < 1e-3)
-		{
-			printf("row = %d, singular = %f\n", k, Ab[k][k]);	
-		}
-		for (int row = k + 1; row < 8; ++row)
-		{
-			double proportion = Ab[row][k] / Ab[k][k];
-			for (int col = 0; col < 9; ++col) {
-				Ab[row][col] -= proportion * Ab[k][col];
+			else if (j <= 5) {
+				A[i][j] = 0;
+			}
+			else if (j <= 7) {
+				A[i][j] = -src_4pts[i][j - 6] * dst_4pts[i][0];
 			}
 		}
 	}
-	std::cout << "PLU matrix = \n";
+	for (int i = 4; i < 8; ++i) {
+		b[i] = dst_4pts[i - 4][1];
+		for (int j = 0; j < 9; ++j) {
+			if (j <= 2) {
+				A[i][j] = 0;
+			}
+			else if (j < 5) {
+				A[i][j] = src_4pts[i - 4][j - 3];
+			}
+			else if (j == 5) {
+				A[i][j] = 1;
+			}
+			else if (j <= 7) {
+				A[i][j] = -src_4pts[i - 4][j - 6] * dst_4pts[i - 4][1];
+			}
+		}
+	}
+	
+	// cal inverse
+	double invA[8][8];
+	mat_inverse(A, invA);
 
-	for (int i = 0; i < 8; ++i) {
-		for (int j = 0; j < 9; ++j)
+	// h = inv(A) @ b
+	double res[9];
+	res[8] = 1.0;
+	for (int row = 0; row < 8; ++row) {
+		double sum = 0;
+		for (int col = 0; col < 8; ++col) 
 		{
-			std::cout << Ab[i][j] << "    ";
+			sum += invA[row][col] * b[col];
+		}
+		res[row] = sum;
+	}
+	for (int row = 0; row < 3; ++row)
+	{
+		for (int col = 0; col < 3; ++col)
+		{
+			std::cout << res[row * 3 + col] << "    ";
 		}
 		std::cout << "\n";
-	}
-	
-	for (int col = 7; col >= 0; --col) 
-	{
-		for (int k = col + 1; k < 8; ++k) 
-		{
-			Ab[col][8] -= Ab[col][k] * res[k];
-		}
-		res[col] = Ab[col][8] / Ab[col][col];
-	}
-	res[8] = 1;
-	
-}
+	};
+
+};
+
